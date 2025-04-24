@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Квартиры без данных (ОСС)</title>
+  <title>Статус квартир по участию в ОСС</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
@@ -20,40 +20,36 @@
       margin-bottom: 10px;
     }
 
-    .legend {
-      margin-bottom: 10px;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-
     .summary {
       font-size: 14px;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
       line-height: 1.6;
+      text-align: left;
+      display: inline-block;
     }
 
-    .legend span.square {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      background-color: #fffdf5;
-      border: 1px solid #bbb;
-      border-radius: 3px;
-      vertical-align: middle;
+    .summary label {
+      display: block;
+      cursor: pointer;
+      margin: 4px 0;
     }
+
+    .green { color: #00c853; }
+    .blue { color: #6fa8dc; }
+    .yellow { color: #fbc02d; }
+    .red { color: #e53935; }
+    .gray { color: #666; }
 
     .filters {
-      margin-bottom: 20px;
+      margin: 20px 0;
     }
 
     .filters label {
       font-size: 14px;
+      margin-right: 10px;
     }
 
-    .filters select {
+    .filters select, .filters input {
       padding: 6px 10px;
       font-size: 14px;
       border-radius: 6px;
@@ -124,65 +120,46 @@
       box-sizing: border-box;
     }
 
-    .cell.nodata {
-      background-color: #fffdf5;
-      border: 1px solid #bbb;
-      box-shadow: 0 0 4px rgba(0, 0, 0, 0.05);
-      color: #333;
-      font-weight: bold;
-    }
+    .green-cell { background-color: #00c853; color: white; font-weight: bold; }
+    .blue-cell { background-color: #6fa8dc; color: white; font-weight: bold; }
+    .yellow-cell { background-color: #ffff00; font-weight: bold; }
+    .red-cell { background-color: #ff0000; color: white; font-weight: bold; }
+    .nodata { background-color: #fffdf5; border: 1px solid #bbb; font-weight: bold; }
 
-    .cell.nodata:hover {
-      background-color: #fff3cd;
-      cursor: help;
-    }
-
-    .green { color: #00c853; }
-    .blue { color: #6fa8dc; }
-    .yellow { color: #fbc02d; }
-    .red { color: #e53935; }
-    .gray { color: #666; }
+    .nodata:hover { background-color: #fff3cd; cursor: help; }
+    .highlight { outline: 2px solid #000; outline-offset: 1px; }
 
     @media (max-width: 768px) {
-      .building {
-        gap: 20px;
-      }
-      .cell {
-        width: 24px;
-        height: 24px;
-        font-size: 9px;
-      }
-      .floor-labels div {
-        height: 24px;
-        font-size: 9px;
-      }
+      .building { gap: 20px; }
+      .cell { width: 24px; height: 24px; font-size: 9px; }
+      .floor-labels div { height: 24px; font-size: 9px; }
     }
   </style>
 </head>
 <body>
-  <h1>Квартиры без данных по участию в ОСС</h1>
-  <div class="legend">
-    <span class="square"></span>
-    Нет данных:
-    <span id="no-data-count">0</span> квартир
-    (<span id="no-data-percent">0</span>%)
-  </div>
+  <h1>Статус квартир по участию в ОСС</h1>
+
   <div class="summary">
-    <span class="green">Проголосовали (зелёные):</span> <span id="count-green">0</span> (<span id="percent-green">0</span>%)<br>
-    <span class="blue">Подготовили бюллетень (синие):</span> <span id="count-blue">0</span> (<span id="percent-blue">0</span>%)<br>
-    <span class="yellow">Ожидается возврат (жёлтые):</span> <span id="count-yellow">0</span> (<span id="percent-yellow">0</span>%)<br>
-    <span class="red">Отказались (красные):</span> <span id="count-red">0</span> (<span id="percent-red">0</span>%)
+    <label><input type="checkbox" id="show-green" checked> <span class="green">Проголосовали:</span> <span id="count-green">0</span> (<span id="percent-green">0</span>%)</label>
+    <label><input type="checkbox" id="show-blue" checked> <span class="blue">Подготовили бюллетень:</span> <span id="count-blue">0</span> (<span id="percent-blue">0</span>%)</label>
+    <label><input type="checkbox" id="show-yellow" checked> <span class="yellow">Ожидается возврат:</span> <span id="count-yellow">0</span> (<span id="percent-yellow">0</span>%)</label>
+    <label><input type="checkbox" id="show-red" checked> <span class="red">Отказались:</span> <span id="count-red">0</span> (<span id="percent-red">0</span>%)</label>
+    <label><input type="checkbox" id="show-nodata" checked> ⚪ <span class="gray">Нет данных:</span> <span id="no-data-count">0</span> (<span id="no-data-percent">0</span>%)</label>
   </div>
+
   <div class="filters">
-    <label for="entranceFilter">Фильтр по подъезду:
+    <label for="entranceFilter">Подъезд:
       <select id="entranceFilter" onchange="render()">
         <option value="all">Все</option>
-        <option value="1">Подъезд 1</option>
-        <option value="2">Подъезд 2</option>
-        <option value="3">Подъезд 3</option>
-        <option value="4">Подъезд 4</option>
-        <option value="5">Подъезд 5</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
       </select>
+    </label>
+    <label for="aptSearch">Квартира:
+      <input type="number" id="aptSearch" placeholder="Номер" oninput="render()">
     </label>
   </div>
 
@@ -202,37 +179,28 @@
 
     const floors = 21;
     const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2);
-    let apartmentsWithoutData = new Set();
-    let counts = {
-      green: 0,
-      blue: 0,
-      yellow: 0,
-      red: 0
-    };
+    let statusMap = {};
 
     Papa.parse(csvUrl, {
       download: true,
       header: true,
       complete: function(results) {
         const data = results.data;
-        apartmentsWithoutData.clear();
-        counts = { green: 0, blue: 0, yellow: 0, red: 0 };
+        statusMap = {};
+        let counts = { green: 0, blue: 0, yellow: 0, red: 0, nodata: 0 };
 
         data.forEach(row => {
           const apt = parseInt(row["Квартира"]);
           const color = row["Цвет"]?.trim().toLowerCase();
-          if (apt && color === "#ffffff") {
-            apartmentsWithoutData.add(apt);
-          } else if (apt) {
-            if (color === "#00ff00") counts.green++;
-            else if (color === "#6fa8dc" || color === "#6d9eeb") counts.blue++;
-            else if (color === "#ffff00") counts.yellow++;
-            else if (color === "#ff0000") counts.red++;
-          }
+          if (!apt) return;
+
+          if (color === "#00ff00") { statusMap[apt] = 'green'; counts.green++; }
+          else if (color === "#6fa8dc" || color === "#6d9eeb") { statusMap[apt] = 'blue'; counts.blue++; }
+          else if (color === "#ffff00") { statusMap[apt] = 'yellow'; counts.yellow++; }
+          else if (color === "#ff0000") { statusMap[apt] = 'red'; counts.red++; }
+          else { statusMap[apt] = 'nodata'; counts.nodata++; }
         });
 
-        document.getElementById("no-data-count").textContent = apartmentsWithoutData.size;
-        document.getElementById("no-data-percent").textContent = ((apartmentsWithoutData.size / TOTAL_APARTMENTS) * 100).toFixed(1);
         document.getElementById("count-green").textContent = counts.green;
         document.getElementById("percent-green").textContent = ((counts.green / TOTAL_APARTMENTS) * 100).toFixed(1);
         document.getElementById("count-blue").textContent = counts.blue;
@@ -241,13 +209,22 @@
         document.getElementById("percent-yellow").textContent = ((counts.yellow / TOTAL_APARTMENTS) * 100).toFixed(1);
         document.getElementById("count-red").textContent = counts.red;
         document.getElementById("percent-red").textContent = ((counts.red / TOTAL_APARTMENTS) * 100).toFixed(1);
+        document.getElementById("no-data-count").textContent = counts.nodata;
+        document.getElementById("no-data-percent").textContent = ((counts.nodata / TOTAL_APARTMENTS) * 100).toFixed(1);
 
         render();
       }
     });
 
     function render() {
+      const showGreen = document.getElementById("show-green").checked;
+      const showBlue = document.getElementById("show-blue").checked;
+      const showYellow = document.getElementById("show-yellow").checked;
+      const showRed = document.getElementById("show-red").checked;
+      const showNodata = document.getElementById("show-nodata").checked;
       const selected = document.getElementById("entranceFilter").value;
+      const searchApt = parseInt(document.getElementById("aptSearch").value);
+
       const buildingDiv = document.getElementById("building");
       buildingDiv.innerHTML = '';
 
@@ -278,13 +255,17 @@
 
           for (let apt = 0; apt < entrance.count; apt++) {
             const aptNumber = entrance.start + floor * entrance.count + apt;
+            const status = statusMap[aptNumber] || 'nodata';
+            if ((status === 'green' && !showGreen) ||
+                (status === 'blue' && !showBlue) ||
+                (status === 'yellow' && !showYellow) ||
+                (status === 'red' && !showRed) ||
+                (status === 'nodata' && !showNodata)) continue;
+
             const cell = document.createElement("div");
             cell.className = "cell";
-
-            if (apartmentsWithoutData.has(aptNumber)) {
-              cell.classList.add("nodata");
-              cell.title = "Нет данных";
-            }
+            if (status) cell.classList.add(`${status}-cell`);
+            if (searchApt === aptNumber) cell.classList.add("highlight");
 
             cell.textContent = aptNumber;
             row.appendChild(cell);
