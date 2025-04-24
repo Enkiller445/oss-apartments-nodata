@@ -32,24 +32,16 @@
     .summary {
       font-size: 14px;
       margin-bottom: 20px;
+      line-height: 1.6;
     }
 
     .legend span.square {
       display: inline-block;
       width: 16px;
       height: 16px;
-      background-color: #fffdf5;
       border: 1px solid #bbb;
       border-radius: 3px;
       vertical-align: middle;
-    }
-
-    #no-data-count,
-    #with-data-count,
-    #with-data-percent {
-      font-weight: bold;
-      margin: 0 4px;
-      color: #000;
     }
 
     .filters {
@@ -163,16 +155,16 @@
 <body>
   <h1>Квартиры без данных по участию в ОСС</h1>
   <div class="legend">
-    <span class="square"></span>
+    <span class="square" style="background-color:#fffdf5;"></span>
     Нет данных:
     <span id="no-data-count">0</span>
     квартир
   </div>
   <div class="summary">
-    Передали данные:
-    <span id="with-data-count">0</span>
-    квартир
-    (<span id="with-data-percent">0</span>%)
+    Проголосовали (зелёные): <span id="count-green">0</span> (<span id="percent-green">0</span>%)<br>
+    Передали бюллетень (синие): <span id="count-blue">0</span> (<span id="percent-blue">0</span>%)<br>
+    Ожидается возврат (жёлтые): <span id="count-yellow">0</span> (<span id="percent-yellow">0</span>%)<br>
+    Отказались (красные): <span id="count-red">0</span> (<span id="percent-red">0</span>%)
   </div>
   <div class="filters">
     <label for="entranceFilter">Фильтр по подъезду:
@@ -204,6 +196,12 @@
     const floors = 21;
     const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2);
     let apartmentsWithoutData = new Set();
+    let counts = {
+      green: 0,
+      blue: 0,
+      yellow: 0,
+      red: 0
+    };
 
     Papa.parse(csvUrl, {
       download: true,
@@ -211,14 +209,30 @@
       complete: function(results) {
         const data = results.data;
         apartmentsWithoutData.clear();
+        counts = { green: 0, blue: 0, yellow: 0, red: 0 };
 
         data.forEach(row => {
           const apt = parseInt(row["Квартира"]);
           const color = row["Цвет"]?.trim().toLowerCase();
           if (apt && color === "#ffffff") {
             apartmentsWithoutData.add(apt);
+          } else if (apt) {
+            if (color === "#00ff00") counts.green++;
+            else if (color === "#6fa8dc" || color === "#6d9eeb") counts.blue++;
+            else if (color === "#ffff00") counts.yellow++;
+            else if (color === "#ff0000") counts.red++;
           }
         });
+
+        document.getElementById("no-data-count").textContent = apartmentsWithoutData.size;
+        document.getElementById("count-green").textContent = counts.green;
+        document.getElementById("percent-green").textContent = ((counts.green / TOTAL_APARTMENTS) * 100).toFixed(1);
+        document.getElementById("count-blue").textContent = counts.blue;
+        document.getElementById("percent-blue").textContent = ((counts.blue / TOTAL_APARTMENTS) * 100).toFixed(1);
+        document.getElementById("count-yellow").textContent = counts.yellow;
+        document.getElementById("percent-yellow").textContent = ((counts.yellow / TOTAL_APARTMENTS) * 100).toFixed(1);
+        document.getElementById("count-red").textContent = counts.red;
+        document.getElementById("percent-red").textContent = ((counts.red / TOTAL_APARTMENTS) * 100).toFixed(1);
 
         render();
       }
@@ -228,7 +242,6 @@
       const selected = document.getElementById("entranceFilter").value;
       const buildingDiv = document.getElementById("building");
       buildingDiv.innerHTML = '';
-      let noDataCount = 0;
 
       entrances.forEach((entrance, index) => {
         const entranceNumber = index + 1;
@@ -263,7 +276,6 @@
             if (apartmentsWithoutData.has(aptNumber)) {
               cell.classList.add("nodata");
               cell.title = "Нет данных";
-              noDataCount++;
             }
 
             cell.textContent = aptNumber;
@@ -282,11 +294,6 @@
         wrapper.appendChild(floorGroup);
         buildingDiv.appendChild(wrapper);
       });
-
-      const withData = TOTAL_APARTMENTS - noDataCount;
-      document.getElementById("no-data-count").textContent = noDataCount;
-      document.getElementById("with-data-count").textContent = withData;
-      document.getElementById("with-data-percent").textContent = ((withData / TOTAL_APARTMENTS) * 100).toFixed(1);
     }
   </script>
 </body>
