@@ -190,6 +190,14 @@
   const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2);
   let statusMap = {};
 
+  const statusLabel = {
+    green: "проголосовали",
+    blue: "подготовили бюллетень",
+    yellow: "ожидается возврат",
+    red: "отказались",
+    nodata: "нет данных"
+  };
+
   Papa.parse(csvUrl, {
     download: true,
     header: true,
@@ -289,7 +297,7 @@
       buildingDiv.appendChild(wrapper);
     });
 
-    // Вывод подъезда и этажа
+    // Показать информацию о квартире
     const aptInfo = document.getElementById("apt-info");
     if (!isNaN(searchApt)) {
       let found = false;
@@ -300,7 +308,8 @@
         if (searchApt >= start && searchApt < end) {
           const localIndex = searchApt - start;
           const floor = Math.floor(localIndex / entrance.count) + 2;
-          aptInfo.textContent = `Квартира ${searchApt} → Подъезд ${e + 1}, этаж ${floor}`;
+          const status = statusMap[searchApt] || "nodata";
+          aptInfo.textContent = `Квартира ${searchApt} → Подъезд ${e + 1}, этаж ${floor}, ${statusLabel[status]}`;
           found = true;
           break;
         }
