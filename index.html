@@ -116,9 +116,10 @@
     .cell.nodata { background-color: #fffdf5; border: 1px solid #ccc; }
 
     .cell.highlight {
-      outline: 2px solid #ffeb3b;
+      outline: 2px solid #ffeb3b !important;
       background-color: #fff59d !important;
       font-weight: bold;
+      z-index: 10;
     }
 
     @media (max-width: 768px) {
@@ -141,11 +142,11 @@
   <h1>Статус квартир по участию в ОСС</h1>
 
   <div class="status-options">
-    <label><input type="checkbox" id="show-green" checked> <span class="green">Проголосовали:</span> <span id="count-green">0</span> (<span id="percent-green">0</span>%)</label>
-    <label><input type="checkbox" id="show-blue" checked> <span class="blue">Подготовили бюллетень:</span> <span id="count-blue">0</span> (<span id="percent-blue">0</span>%)</label>
-    <label><input type="checkbox" id="show-yellow" checked> <span class="yellow">Ожидается возврат:</span> <span id="count-yellow">0</span> (<span id="percent-yellow">0</span>%)</label>
-    <label><input type="checkbox" id="show-red" checked> <span class="red">Отказались:</span> <span id="count-red">0</span> (<span id="percent-red">0</span>%)</label>
-    <label><input type="checkbox" id="show-nodata" checked> <span class="gray">Нет данных:</span> <span id="count-nodata">0</span> (<span id="percent-nodata">0</span>%)</label>
+    <label><input type="checkbox" id="show-green" checked onchange="render()"> <span class="green">Проголосовали:</span> <span id="count-green">0</span> (<span id="percent-green">0</span>%)</label>
+    <label><input type="checkbox" id="show-blue" checked onchange="render()"> <span class="blue">Подготовили бюллетень:</span> <span id="count-blue">0</span> (<span id="percent-blue">0</span>%)</label>
+    <label><input type="checkbox" id="show-yellow" checked onchange="render()"> <span class="yellow">Ожидается возврат:</span> <span id="count-yellow">0</span> (<span id="percent-yellow">0</span>%)</label>
+    <label><input type="checkbox" id="show-red" checked onchange="render()"> <span class="red">Отказались:</span> <span id="count-red">0</span> (<span id="percent-red">0</span>%)</label>
+    <label><input type="checkbox" id="show-nodata" checked onchange="render()"> <span class="gray">Нет данных:</span> <span id="count-nodata">0</span> (<span id="percent-nodata">0</span>%)</label>
   </div>
 
   <div class="filters">
@@ -166,122 +167,121 @@
   </div>
 
   <div class="building" id="building"></div>
+<script>
+  const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTRRbhD4HVJzaB0vZwakUhpv0rHu3LvS0Gxq3zl4Qo9dANsvW8LosfiylBqljl2dVV1vmMNpOpP0516/pub?gid=63142697&single=true&output=csv';
+  const TOTAL_APARTMENTS = 735;
 
-  <script>
-    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTRRbhD4HVJzaB0vZwakUhpv0rHu3LvS0Gxq3zl4Qo9dANsvW8LosfiylBqljl2dVV1vmMNpOpP0516/pub?gid=63142697&single=true&output=csv';
-    const TOTAL_APARTMENTS = 735;
+  const entrances = [
+    { count: 5, start: 1 },
+    { count: 5, start: 106 },
+    { count: 6, start: 211 },
+    { count: 10, start: 337 },
+    { count: 9, start: 547 }
+  ];
 
-    const entrances = [
-      { count: 5, start: 1 },
-      { count: 5, start: 106 },
-      { count: 6, start: 211 },
-      { count: 10, start: 337 },
-      { count: 9, start: 547 }
-    ];
+  const floors = 21;
+  const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2);
+  let statusMap = {};
 
-    const floors = 21;
-    const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2);
-    let statusMap = {};
+  Papa.parse(csvUrl, {
+    download: true,
+    header: true,
+    complete: function(results) {
+      const data = results.data;
+      statusMap = {};
+      let counts = { green: 0, blue: 0, yellow: 0, red: 0, nodata: 0 };
 
-    Papa.parse(csvUrl, {
-      download: true,
-      header: true,
-      complete: function(results) {
-        const data = results.data;
-        statusMap = {};
-        let counts = { green: 0, blue: 0, yellow: 0, red: 0, nodata: 0 };
-
-        data.forEach(row => {
-          const apt = parseInt(row["Квартира"]);
-          const color = row["Цвет"]?.trim().toLowerCase();
-          if (!apt) return;
-          if (color === "#00ff00") statusMap[apt] = "green", counts.green++;
-          else if (color === "#6fa8dc" || color === "#6d9eeb") statusMap[apt] = "blue", counts.blue++;
-          else if (color === "#ffff00") statusMap[apt] = "yellow", counts.yellow++;
-          else if (color === "#ff0000") statusMap[apt] = "red", counts.red++;
-          else if (color === "#ffffff") statusMap[apt] = "nodata", counts.nodata++;
-        });
-
-        for (let i = 1; i <= TOTAL_APARTMENTS; i++) {
-          if (!statusMap[i]) statusMap[i] = "nodata", counts.nodata++;
-        }
-
-        const updateCount = (type) => {
-          document.getElementById(`count-${type}`).textContent = counts[type];
-          document.getElementById(`percent-${type}`).textContent = ((counts[type] / TOTAL_APARTMENTS) * 100).toFixed(1);
-        };
-
-        ["green", "blue", "yellow", "red", "nodata"].forEach(updateCount);
-        render();
-      }
-    });
-
-    function render() {
-      const buildingDiv = document.getElementById("building");
-      buildingDiv.innerHTML = '';
-
-      const show = {
-        green: document.getElementById("show-green").checked,
-        blue: document.getElementById("show-blue").checked,
-        yellow: document.getElementById("show-yellow").checked,
-        red: document.getElementById("show-red").checked,
-        nodata: document.getElementById("show-nodata").checked
-      };
-
-      const selectedEntrance = document.getElementById("entranceFilter").value;
-      const searchApt = parseInt(document.getElementById("aptSearch").value);
-
-      entrances.forEach((entrance, index) => {
-        const entranceNumber = index + 1;
-        if (selectedEntrance !== 'all' && parseInt(selectedEntrance) !== entranceNumber) return;
-
-        const wrapper = document.createElement("div");
-        wrapper.className = "entrance-block";
-
-        const title = document.createElement("div");
-        title.className = "entrance-title";
-        title.textContent = `Подъезд ${entranceNumber}`;
-
-        const floorGroup = document.createElement("div");
-        floorGroup.className = "entrance";
-
-        const floorLabels = document.createElement("div");
-        floorLabels.className = "floor-labels";
-
-        const grid = document.createElement("div");
-        grid.className = "columns";
-
-        for (let i = 0; i < floors; i++) {
-          const floor = floors - 1 - i;
-          const row = document.createElement("div");
-          row.className = "row";
-
-          for (let apt = 0; apt < entrance.count; apt++) {
-            const aptNumber = entrance.start + floor * entrance.count + apt;
-            const cell = document.createElement("div");
-            cell.className = "cell";
-            const status = statusMap[aptNumber] || "nodata";
-
-            if (show[status]) cell.classList.add(status);
-            if (aptNumber === searchApt) cell.classList.add("highlight");
-
-            cell.textContent = aptNumber;
-            row.appendChild(cell);
-          }
-
-          const label = document.createElement("div");
-          label.textContent = floorNumbers[floor];
-          floorLabels.appendChild(label);
-          grid.appendChild(row);
-        }
-
-        floorGroup.appendChild(floorLabels);
-        floorGroup.appendChild(grid);
-        wrapper.appendChild(title);
-        wrapper.appendChild(floorGroup);
-        buildingDiv.appendChild(wrapper);
+      data.forEach(row => {
+        const apt = parseInt(row["Квартира"]);
+        const color = row["Цвет"]?.trim().toLowerCase();
+        if (!apt) return;
+        if (color === "#00ff00") statusMap[apt] = "green", counts.green++;
+        else if (color === "#6fa8dc" || color === "#6d9eeb") statusMap[apt] = "blue", counts.blue++;
+        else if (color === "#ffff00") statusMap[apt] = "yellow", counts.yellow++;
+        else if (color === "#ff0000") statusMap[apt] = "red", counts.red++;
+        else if (color === "#ffffff") statusMap[apt] = "nodata", counts.nodata++;
       });
+
+      for (let i = 1; i <= TOTAL_APARTMENTS; i++) {
+        if (!statusMap[i]) statusMap[i] = "nodata", counts.nodata++;
+      }
+
+      ["green", "blue", "yellow", "red", "nodata"].forEach(type => {
+        document.getElementById(`count-${type}`).textContent = counts[type];
+        document.getElementById(`percent-${type}`).textContent = ((counts[type] / TOTAL_APARTMENTS) * 100).toFixed(1);
+      });
+
+      render();
     }
-  </script>
+  });
+
+  function render() {
+    const buildingDiv = document.getElementById("building");
+    buildingDiv.innerHTML = '';
+
+    const show = {
+      green: document.getElementById("show-green").checked,
+      blue: document.getElementById("show-blue").checked,
+      yellow: document.getElementById("show-yellow").checked,
+      red: document.getElementById("show-red").checked,
+      nodata: document.getElementById("show-nodata").checked
+    };
+
+    const selectedEntrance = document.getElementById("entranceFilter").value;
+    const searchApt = parseInt(document.getElementById("aptSearch").value);
+
+    entrances.forEach((entrance, index) => {
+      const entranceNumber = index + 1;
+      if (selectedEntrance !== 'all' && parseInt(selectedEntrance) !== entranceNumber) return;
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "entrance-block";
+
+      const title = document.createElement("div");
+      title.className = "entrance-title";
+      title.textContent = `Подъезд ${entranceNumber}`;
+
+      const floorGroup = document.createElement("div");
+      floorGroup.className = "entrance";
+
+      const floorLabels = document.createElement("div");
+      floorLabels.className = "floor-labels";
+
+      const grid = document.createElement("div");
+      grid.className = "columns";
+
+      for (let i = 0; i < floors; i++) {
+        const floor = floors - 1 - i;
+        const row = document.createElement("div");
+        row.className = "row";
+
+        for (let apt = 0; apt < entrance.count; apt++) {
+          const aptNumber = entrance.start + floor * entrance.count + apt;
+          const cell = document.createElement("div");
+          cell.className = "cell";
+
+          const status = statusMap[aptNumber] || "nodata";
+
+          if (show[status]) cell.classList.add(status);
+          if (aptNumber === searchApt) cell.classList.add("highlight");
+
+          cell.textContent = aptNumber;
+          row.appendChild(cell);
+        }
+
+        const label = document.createElement("div");
+        label.textContent = floorNumbers[floor];
+        floorLabels.appendChild(label);
+        grid.appendChild(row);
+      }
+
+      floorGroup.appendChild(floorLabels);
+      floorGroup.appendChild(grid);
+      wrapper.appendChild(title);
+      wrapper.appendChild(floorGroup);
+      buildingDiv.appendChild(wrapper);
+    });
+  }
+</script>
 </body>
 </html>
