@@ -188,20 +188,20 @@
 
     const floors = 21;
     const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2);
-    let apartmentsWithData = new Set();
+    let apartmentsWithoutData = new Set();
 
     Papa.parse(csvUrl, {
       download: true,
       header: true,
       complete: function(results) {
         const data = results.data;
-        apartmentsWithData.clear();
+        apartmentsWithoutData.clear();
 
         data.forEach(row => {
           const apt = parseInt(row["Квартира"]);
-          const color = row["Цвет"]?.trim();
-          if (apt && color) {
-            apartmentsWithData.add(apt);
+          const color = row["Цвет"]?.trim().toLowerCase();
+          if (apt && color === "#ffffff") {
+            apartmentsWithoutData.add(apt);
           }
         });
 
@@ -245,7 +245,7 @@
             const cell = document.createElement("div");
             cell.className = "cell";
 
-            if (!apartmentsWithData.has(aptNumber)) {
+            if (apartmentsWithoutData.has(aptNumber)) {
               cell.classList.add("nodata");
               cell.title = "Нет данных";
               noDataCount++;
