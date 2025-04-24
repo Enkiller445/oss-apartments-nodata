@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Статус квартир по участию в ОСС</title>
+  <title>Статус квартир по ОСС</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
@@ -20,18 +20,20 @@
       margin-bottom: 10px;
     }
 
-    .summary {
+    .status-options {
       font-size: 14px;
-      margin-bottom: 10px;
       line-height: 1.6;
-      text-align: left;
-      display: inline-block;
+      margin-bottom: 20px;
     }
 
-    .summary label {
+    .status-options label {
       display: block;
+      margin-bottom: 4px;
       cursor: pointer;
-      margin: 4px 0;
+    }
+
+    .status-options input {
+      margin-right: 6px;
     }
 
     .green { color: #00c853; }
@@ -41,20 +43,7 @@
     .gray { color: #666; }
 
     .filters {
-      margin: 20px 0;
-    }
-
-    .filters label {
-      font-size: 14px;
-      margin-right: 10px;
-    }
-
-    .filters select, .filters input {
-      padding: 6px 10px;
-      font-size: 14px;
-      border-radius: 6px;
-      border: 1px solid #aaa;
-      margin-left: 6px;
+      margin-bottom: 20px;
     }
 
     .building {
@@ -118,38 +107,49 @@
       font-size: 10px;
       box-shadow: 0 0 2px rgba(0, 0, 0, 0.05);
       box-sizing: border-box;
-      transition: all 0.2s ease;
     }
 
-    .green-cell { background-color: #00c853; color: white; font-weight: bold; }
-    .blue-cell { background-color: #6fa8dc; color: white; font-weight: bold; }
-    .yellow-cell { background-color: #ffff00; font-weight: bold; color: #000; }
-    .red-cell { background-color: #ff0000; color: white; font-weight: bold; }
-    .nodata-cell { background-color: #fffdf5; border: 1px solid #bbb; font-weight: bold; color: #333; }
+    .cell.green { background-color: #00c853; color: #fff; font-weight: bold; }
+    .cell.blue  { background-color: #6fa8dc; color: #fff; font-weight: bold; }
+    .cell.yellow { background-color: #fbc02d; color: #000; font-weight: bold; }
+    .cell.red { background-color: #e53935; color: #fff; font-weight: bold; }
+    .cell.nodata { background-color: #fffdf5; border: 1px solid #ccc; }
 
-    .nodata-cell:hover { background-color: #fff3cd; cursor: help; }
-    .highlight { outline: 2px solid #000; outline-offset: 1px; background-color: #ffe082 !important; }
+    .cell.highlight {
+      outline: 2px solid #ffeb3b;
+      background-color: #fff59d !important;
+      font-weight: bold;
+    }
 
     @media (max-width: 768px) {
-      .building { gap: 20px; }
-      .cell { width: 24px; height: 24px; font-size: 9px; }
-      .floor-labels div { height: 24px; font-size: 9px; }
+      .building {
+        gap: 20px;
+      }
+      .cell {
+        width: 24px;
+        height: 24px;
+        font-size: 9px;
+      }
+      .floor-labels div {
+        height: 24px;
+        font-size: 9px;
+      }
     }
   </style>
 </head>
 <body>
   <h1>Статус квартир по участию в ОСС</h1>
 
-  <div class="summary">
+  <div class="status-options">
     <label><input type="checkbox" id="show-green" checked> <span class="green">Проголосовали:</span> <span id="count-green">0</span> (<span id="percent-green">0</span>%)</label>
     <label><input type="checkbox" id="show-blue" checked> <span class="blue">Подготовили бюллетень:</span> <span id="count-blue">0</span> (<span id="percent-blue">0</span>%)</label>
     <label><input type="checkbox" id="show-yellow" checked> <span class="yellow">Ожидается возврат:</span> <span id="count-yellow">0</span> (<span id="percent-yellow">0</span>%)</label>
     <label><input type="checkbox" id="show-red" checked> <span class="red">Отказались:</span> <span id="count-red">0</span> (<span id="percent-red">0</span>%)</label>
-    <label><input type="checkbox" id="show-nodata" checked> ⚪ <span class="gray">Нет данных:</span> <span id="no-data-count">0</span> (<span id="no-data-percent">0</span>%)</label>
+    <label><input type="checkbox" id="show-nodata" checked> <span class="gray">Нет данных:</span> <span id="count-nodata">0</span> (<span id="percent-nodata">0</span>%)</label>
   </div>
 
   <div class="filters">
-    <label for="entranceFilter">Подъезд:
+    <label>Подъезд:
       <select id="entranceFilter" onchange="render()">
         <option value="all">Все</option>
         <option value="1">1</option>
@@ -159,8 +159,9 @@
         <option value="5">5</option>
       </select>
     </label>
-    <label for="aptSearch">Квартира:
-      <input type="number" id="aptSearch" placeholder="Номер" oninput="render()">
+    &nbsp;&nbsp;
+    <label>Квартира:
+      <input type="number" id="aptSearch" placeholder="Номер" oninput="render()" />
     </label>
   </div>
 
@@ -194,44 +195,45 @@
           const apt = parseInt(row["Квартира"]);
           const color = row["Цвет"]?.trim().toLowerCase();
           if (!apt) return;
-
-          if (color === "#00ff00") { statusMap[apt] = 'green'; counts.green++; }
-          else if (color === "#6fa8dc" || color === "#6d9eeb") { statusMap[apt] = 'blue'; counts.blue++; }
-          else if (color === "#ffff00") { statusMap[apt] = 'yellow'; counts.yellow++; }
-          else if (color === "#ff0000") { statusMap[apt] = 'red'; counts.red++; }
-          else if (color === "#ffffff") { statusMap[apt] = 'nodata'; counts.nodata++; }
+          if (color === "#00ff00") statusMap[apt] = "green", counts.green++;
+          else if (color === "#6fa8dc" || color === "#6d9eeb") statusMap[apt] = "blue", counts.blue++;
+          else if (color === "#ffff00") statusMap[apt] = "yellow", counts.yellow++;
+          else if (color === "#ff0000") statusMap[apt] = "red", counts.red++;
+          else if (color === "#ffffff") statusMap[apt] = "nodata", counts.nodata++;
         });
 
-        document.getElementById("count-green").textContent = counts.green;
-        document.getElementById("percent-green").textContent = ((counts.green / TOTAL_APARTMENTS) * 100).toFixed(1);
-        document.getElementById("count-blue").textContent = counts.blue;
-        document.getElementById("percent-blue").textContent = ((counts.blue / TOTAL_APARTMENTS) * 100).toFixed(1);
-        document.getElementById("count-yellow").textContent = counts.yellow;
-        document.getElementById("percent-yellow").textContent = ((counts.yellow / TOTAL_APARTMENTS) * 100).toFixed(1);
-        document.getElementById("count-red").textContent = counts.red;
-        document.getElementById("percent-red").textContent = ((counts.red / TOTAL_APARTMENTS) * 100).toFixed(1);
-        document.getElementById("no-data-count").textContent = counts.nodata;
-        document.getElementById("no-data-percent").textContent = ((counts.nodata / TOTAL_APARTMENTS) * 100).toFixed(1);
+        for (let i = 1; i <= TOTAL_APARTMENTS; i++) {
+          if (!statusMap[i]) statusMap[i] = "nodata", counts.nodata++;
+        }
 
+        const updateCount = (type) => {
+          document.getElementById(`count-${type}`).textContent = counts[type];
+          document.getElementById(`percent-${type}`).textContent = ((counts[type] / TOTAL_APARTMENTS) * 100).toFixed(1);
+        };
+
+        ["green", "blue", "yellow", "red", "nodata"].forEach(updateCount);
         render();
       }
     });
 
     function render() {
-      const showGreen = document.getElementById("show-green").checked;
-      const showBlue = document.getElementById("show-blue").checked;
-      const showYellow = document.getElementById("show-yellow").checked;
-      const showRed = document.getElementById("show-red").checked;
-      const showNodata = document.getElementById("show-nodata").checked;
-      const selected = document.getElementById("entranceFilter").value;
-      const searchApt = parseInt(document.getElementById("aptSearch").value);
-
       const buildingDiv = document.getElementById("building");
       buildingDiv.innerHTML = '';
 
+      const show = {
+        green: document.getElementById("show-green").checked,
+        blue: document.getElementById("show-blue").checked,
+        yellow: document.getElementById("show-yellow").checked,
+        red: document.getElementById("show-red").checked,
+        nodata: document.getElementById("show-nodata").checked
+      };
+
+      const selectedEntrance = document.getElementById("entranceFilter").value;
+      const searchApt = parseInt(document.getElementById("aptSearch").value);
+
       entrances.forEach((entrance, index) => {
         const entranceNumber = index + 1;
-        if (selected !== 'all' && parseInt(selected) !== entranceNumber) return;
+        if (selectedEntrance !== 'all' && parseInt(selectedEntrance) !== entranceNumber) return;
 
         const wrapper = document.createElement("div");
         wrapper.className = "entrance-block";
@@ -256,17 +258,12 @@
 
           for (let apt = 0; apt < entrance.count; apt++) {
             const aptNumber = entrance.start + floor * entrance.count + apt;
-            const status = statusMap[aptNumber] || null;
-            if ((status === 'green' && !showGreen) ||
-                (status === 'blue' && !showBlue) ||
-                (status === 'yellow' && !showYellow) ||
-                (status === 'red' && !showRed) ||
-                (status === 'nodata' && !showNodata)) continue;
-
             const cell = document.createElement("div");
             cell.className = "cell";
-            if (status) cell.classList.add(`${status}-cell`);
-            if (!isNaN(searchApt) && aptNumber === searchApt) cell.classList.add("highlight");
+            const status = statusMap[aptNumber] || "nodata";
+
+            if (show[status]) cell.classList.add(status);
+            if (aptNumber === searchApt) cell.classList.add("highlight");
 
             cell.textContent = aptNumber;
             row.appendChild(cell);
