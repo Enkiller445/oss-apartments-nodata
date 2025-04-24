@@ -39,6 +39,7 @@
       display: inline-block;
       width: 16px;
       height: 16px;
+      background-color: #fffdf5;
       border: 1px solid #bbb;
       border-radius: 3px;
       vertical-align: middle;
@@ -136,6 +137,12 @@
       cursor: help;
     }
 
+    .green { color: #00c853; }
+    .blue { color: #6fa8dc; }
+    .yellow { color: #fbc02d; }
+    .red { color: #e53935; }
+    .gray { color: #666; }
+
     @media (max-width: 768px) {
       .building {
         gap: 20px;
@@ -155,16 +162,16 @@
 <body>
   <h1>Квартиры без данных по участию в ОСС</h1>
   <div class="legend">
-    <span class="square" style="background-color:#fffdf5;"></span>
+    <span class="square"></span>
     Нет данных:
-    <span id="no-data-count">0</span>
-    квартир
+    <span id="no-data-count">0</span> квартир
+    (<span id="no-data-percent">0</span>%)
   </div>
   <div class="summary">
-    Проголосовали (зелёные): <span id="count-green">0</span> (<span id="percent-green">0</span>%)<br>
-    Бюллетень напечатан (синие): <span id="count-blue">0</span> (<span id="percent-blue">0</span>%)<br>
-    Ожидается возврат (жёлтые): <span id="count-yellow">0</span> (<span id="percent-yellow">0</span>%)<br>
-    Отказались (красные): <span id="count-red">0</span> (<span id="percent-red">0</span>%)
+    <span class="green">Проголосовали (зелёные):</span> <span id="count-green">0</span> (<span id="percent-green">0</span>%)<br>
+    <span class="blue">Передали бюллетень (синие):</span> <span id="count-blue">0</span> (<span id="percent-blue">0</span>%)<br>
+    <span class="yellow">Ожидается возврат (жёлтые):</span> <span id="count-yellow">0</span> (<span id="percent-yellow">0</span>%)<br>
+    <span class="red">Отказались (красные):</span> <span id="count-red">0</span> (<span id="percent-red">0</span>%)
   </div>
   <div class="filters">
     <label for="entranceFilter">Фильтр по подъезду:
@@ -225,6 +232,7 @@
         });
 
         document.getElementById("no-data-count").textContent = apartmentsWithoutData.size;
+        document.getElementById("no-data-percent").textContent = ((apartmentsWithoutData.size / TOTAL_APARTMENTS) * 100).toFixed(1);
         document.getElementById("count-green").textContent = counts.green;
         document.getElementById("percent-green").textContent = ((counts.green / TOTAL_APARTMENTS) * 100).toFixed(1);
         document.getElementById("count-blue").textContent = counts.blue;
