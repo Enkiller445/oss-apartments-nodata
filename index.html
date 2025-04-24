@@ -125,9 +125,9 @@
     .blue-cell { background-color: #6fa8dc; color: white; font-weight: bold; }
     .yellow-cell { background-color: #ffff00; font-weight: bold; color: #000; }
     .red-cell { background-color: #ff0000; color: white; font-weight: bold; }
-    .nodata { background-color: #fffdf5; border: 1px solid #bbb; font-weight: bold; color: #333; }
+    .nodata-cell { background-color: #fffdf5; border: 1px solid #bbb; font-weight: bold; color: #333; }
 
-    .nodata:hover { background-color: #fff3cd; cursor: help; }
+    .nodata-cell:hover { background-color: #fff3cd; cursor: help; }
     .highlight { outline: 2px solid #000; outline-offset: 1px; background-color: #ffe082 !important; }
 
     @media (max-width: 768px) {
@@ -199,7 +199,7 @@
           else if (color === "#6fa8dc" || color === "#6d9eeb") { statusMap[apt] = 'blue'; counts.blue++; }
           else if (color === "#ffff00") { statusMap[apt] = 'yellow'; counts.yellow++; }
           else if (color === "#ff0000") { statusMap[apt] = 'red'; counts.red++; }
-          else { statusMap[apt] = 'nodata'; counts.nodata++; }
+          else if (color === "#ffffff") { statusMap[apt] = 'nodata'; counts.nodata++; }
         });
 
         document.getElementById("count-green").textContent = counts.green;
@@ -256,7 +256,7 @@
 
           for (let apt = 0; apt < entrance.count; apt++) {
             const aptNumber = entrance.start + floor * entrance.count + apt;
-            const status = statusMap[aptNumber] || 'nodata';
+            const status = statusMap[aptNumber] || null;
             if ((status === 'green' && !showGreen) ||
                 (status === 'blue' && !showBlue) ||
                 (status === 'yellow' && !showYellow) ||
