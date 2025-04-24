@@ -21,12 +21,17 @@
     }
 
     .legend {
-      margin-bottom: 20px;
+      margin-bottom: 10px;
       font-size: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
+    }
+
+    .summary {
+      font-size: 14px;
+      margin-bottom: 20px;
     }
 
     .legend span.square {
@@ -39,7 +44,9 @@
       vertical-align: middle;
     }
 
-    #no-data-count {
+    #no-data-count,
+    #with-data-count,
+    #with-data-percent {
       font-weight: bold;
       margin: 0 4px;
       color: #000;
@@ -161,6 +168,12 @@
     <span id="no-data-count">0</span>
     квартир
   </div>
+  <div class="summary">
+    Передали данные:
+    <span id="with-data-count">0</span>
+    квартир
+    (<span id="with-data-percent">0</span>%)
+  </div>
   <div class="filters">
     <label for="entranceFilter">Фильтр по подъезду:
       <select id="entranceFilter" onchange="render()">
@@ -178,6 +191,7 @@
 
   <script>
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTRRbhD4HVJzaB0vZwakUhpv0rHu3LvS0Gxq3zl4Qo9dANsvW8LosfiylBqljl2dVV1vmMNpOpP0516/pub?gid=63142697&single=true&output=csv';
+    const TOTAL_APARTMENTS = 735;
 
     const entrances = [
       { count: 5, start: 1 },
@@ -269,7 +283,10 @@
         buildingDiv.appendChild(wrapper);
       });
 
+      const withData = TOTAL_APARTMENTS - noDataCount;
       document.getElementById("no-data-count").textContent = noDataCount;
+      document.getElementById("with-data-count").textContent = withData;
+      document.getElementById("with-data-percent").textContent = ((withData / TOTAL_APARTMENTS) * 100).toFixed(1);
     }
   </script>
 </body>
