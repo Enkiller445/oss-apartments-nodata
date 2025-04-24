@@ -43,7 +43,7 @@
     .gray { color: #666; }
 
     .filters {
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
 
     .building {
@@ -122,6 +122,13 @@
       z-index: 10;
     }
 
+    #apt-info {
+      font-size: 14px;
+      font-weight: bold;
+      margin-top: 8px;
+      margin-bottom: 16px;
+    }
+
     @media (max-width: 768px) {
       .building {
         gap: 20px;
@@ -165,7 +172,7 @@
       <input type="number" id="aptSearch" placeholder="Номер" oninput="render()" />
     </label>
   </div>
-
+  <div id="apt-info"></div>
   <div class="building" id="building"></div>
 <script>
   const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTRRbhD4HVJzaB0vZwakUhpv0rHu3LvS0Gxq3zl4Qo9dANsvW8LosfiylBqljl2dVV1vmMNpOpP0516/pub?gid=63142697&single=true&output=csv';
@@ -281,6 +288,29 @@
       wrapper.appendChild(floorGroup);
       buildingDiv.appendChild(wrapper);
     });
+
+    // Вывод подъезда и этажа
+    const aptInfo = document.getElementById("apt-info");
+    if (!isNaN(searchApt)) {
+      let found = false;
+      for (let e = 0; e < entrances.length; e++) {
+        const entrance = entrances[e];
+        const start = entrance.start;
+        const end = entrance.start + entrance.count * floors;
+        if (searchApt >= start && searchApt < end) {
+          const localIndex = searchApt - start;
+          const floor = Math.floor(localIndex / entrance.count) + 2;
+          aptInfo.textContent = `Квартира ${searchApt} → Подъезд ${e + 1}, этаж ${floor}`;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        aptInfo.textContent = `Квартира ${searchApt} не найдена в структуре подъездов`;
+      }
+    } else {
+      aptInfo.textContent = '';
+    }
   }
 </script>
 </body>
