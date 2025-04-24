@@ -118,16 +118,17 @@
       font-size: 10px;
       box-shadow: 0 0 2px rgba(0, 0, 0, 0.05);
       box-sizing: border-box;
+      transition: all 0.2s ease;
     }
 
     .green-cell { background-color: #00c853; color: white; font-weight: bold; }
     .blue-cell { background-color: #6fa8dc; color: white; font-weight: bold; }
-    .yellow-cell { background-color: #ffff00; font-weight: bold; }
+    .yellow-cell { background-color: #ffff00; font-weight: bold; color: #000; }
     .red-cell { background-color: #ff0000; color: white; font-weight: bold; }
-    .nodata { background-color: #fffdf5; border: 1px solid #bbb; font-weight: bold; }
+    .nodata { background-color: #fffdf5; border: 1px solid #bbb; font-weight: bold; color: #333; }
 
     .nodata:hover { background-color: #fff3cd; cursor: help; }
-    .highlight { outline: 2px solid #000; outline-offset: 1px; }
+    .highlight { outline: 2px solid #000; outline-offset: 1px; background-color: #ffe082 !important; }
 
     @media (max-width: 768px) {
       .building { gap: 20px; }
@@ -265,7 +266,7 @@
             const cell = document.createElement("div");
             cell.className = "cell";
             if (status) cell.classList.add(`${status}-cell`);
-            if (searchApt === aptNumber) cell.classList.add("highlight");
+            if (!isNaN(searchApt) && aptNumber === searchApt) cell.classList.add("highlight");
 
             cell.textContent = aptNumber;
             row.appendChild(cell);
