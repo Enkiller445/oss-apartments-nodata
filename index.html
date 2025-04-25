@@ -20,19 +20,28 @@
       margin-bottom: 10px;
     }
 
-    .status-options {
-      font-size: 14px;
-      line-height: 1.6;
+    .info-panel {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
       margin-bottom: 20px;
+      flex-wrap: wrap;
     }
 
-    .status-options label {
+    .status-column, .analytics-column {
+      font-size: 14px;
+      line-height: 1.6;
+      text-align: left;
+      min-width: 240px;
+    }
+
+    .status-column label {
       display: block;
       margin-bottom: 4px;
       cursor: pointer;
     }
 
-    .status-options input {
+    .status-column input {
       margin-right: 6px;
     }
 
@@ -130,8 +139,9 @@
     }
 
     @media (max-width: 768px) {
-      .building {
-        gap: 20px;
+      .info-panel {
+        flex-direction: column;
+        align-items: center;
       }
       .cell {
         width: 24px;
@@ -148,12 +158,22 @@
 <body>
   <h1>Статус квартир по участию в ОСС</h1>
 
-  <div class="status-options">
-    <label><input type="checkbox" id="show-green" checked onchange="render()"> <span class="green">Проголосовали:</span> <span id="count-green">0</span> (<span id="percent-green">0</span>%)</label>
-    <label><input type="checkbox" id="show-blue" checked onchange="render()"> <span class="blue">Подготовили бюллетень:</span> <span id="count-blue">0</span> (<span id="percent-blue">0</span>%)</label>
-    <label><input type="checkbox" id="show-yellow" checked onchange="render()"> <span class="yellow">Ожидается возврат:</span> <span id="count-yellow">0</span> (<span id="percent-yellow">0</span>%)</label>
-    <label><input type="checkbox" id="show-red" checked onchange="render()"> <span class="red">Отказались:</span> <span id="count-red">0</span> (<span id="percent-red">0</span>%)</label>
-    <label><input type="checkbox" id="show-nodata" checked onchange="render()"> <span class="gray">Нет данных:</span> <span id="count-nodata">0</span> (<span id="percent-nodata">0</span>%)</label>
+  <div class="info-panel">
+    <div class="status-column">
+      <label><input type="checkbox" id="show-green" checked onchange="render()"> <span class="green">Проголосовали:</span> <span id="count-green">0</span> (<span id="percent-green">0</span>%)</label>
+      <label><input type="checkbox" id="show-blue" checked onchange="render()"> <span class="blue">Подготовили бюллетень:</span> <span id="count-blue">0</span> (<span id="percent-blue">0</span>%)</label>
+      <label><input type="checkbox" id="show-yellow" checked onchange="render()"> <span class="yellow">Ожидается возврат:</span> <span id="count-yellow">0</span> (<span id="percent-yellow">0</span>%)</label>
+      <label><input type="checkbox" id="show-red" checked onchange="render()"> <span class="red">Отказались:</span> <span id="count-red">0</span> (<span id="percent-red">0</span>%)</label>
+      <label><input type="checkbox" id="show-nodata" checked onchange="render()"> <span class="gray">Нет данных:</span> <span id="count-nodata">0</span> (<span id="percent-nodata">0</span>%)</label>
+    </div>
+
+    <div class="analytics-column">
+      <div><strong>Возможный кворум на сегодня:</strong> <span id="kvorum-today">0</span>%</div>
+      <div><strong>ОСС идёт дней:</strong> <span id="oss-days">0</span></div>
+      <div><strong>Средний темп:</strong> <span id="avg-speed">0</span>% в день</div>
+      <div><strong>ОСС осталось дней:</strong> <span id="oss-left">0</span></div>
+      <div><strong>Прогноз кворума:</strong> <span id="kvorum-final">0</span>%</div>
+    </div>
   </div>
 
   <div class="filters">
@@ -177,6 +197,9 @@
 <script>
   const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTRRbhD4HVJzaB0vZwakUhpv0rHu3LvS0Gxq3zl4Qo9dANsvW8LosfiylBqljl2dVV1vmMNpOpP0516/pub?gid=63142697&single=true&output=csv';
   const TOTAL_APARTMENTS = 735;
+
+  const startDate = new Date('2025-04-10');
+  const endDate = new Date('2025-08-10');
 
   const entrances = [
     { count: 5, start: 1 },
@@ -221,106 +244,6 @@
         if (!statusMap[i]) statusMap[i] = "nodata", counts.nodata++;
       }
 
+      // Статусы
       ["green", "blue", "yellow", "red", "nodata"].forEach(type => {
-        document.getElementById(`count-${type}`).textContent = counts[type];
-        document.getElementById(`percent-${type}`).textContent = ((counts[type] / TOTAL_APARTMENTS) * 100).toFixed(1);
-      });
-
-      render();
-    }
-  });
-
-  function render() {
-    const buildingDiv = document.getElementById("building");
-    buildingDiv.innerHTML = '';
-
-    const show = {
-      green: document.getElementById("show-green").checked,
-      blue: document.getElementById("show-blue").checked,
-      yellow: document.getElementById("show-yellow").checked,
-      red: document.getElementById("show-red").checked,
-      nodata: document.getElementById("show-nodata").checked
-    };
-
-    const selectedEntrance = document.getElementById("entranceFilter").value;
-    const searchApt = parseInt(document.getElementById("aptSearch").value);
-
-    entrances.forEach((entrance, index) => {
-      const entranceNumber = index + 1;
-      if (selectedEntrance !== 'all' && parseInt(selectedEntrance) !== entranceNumber) return;
-
-      const wrapper = document.createElement("div");
-      wrapper.className = "entrance-block";
-
-      const title = document.createElement("div");
-      title.className = "entrance-title";
-      title.textContent = `Подъезд ${entranceNumber}`;
-
-      const floorGroup = document.createElement("div");
-      floorGroup.className = "entrance";
-
-      const floorLabels = document.createElement("div");
-      floorLabels.className = "floor-labels";
-
-      const grid = document.createElement("div");
-      grid.className = "columns";
-
-      for (let i = 0; i < floors; i++) {
-        const floor = floors - 1 - i;
-        const row = document.createElement("div");
-        row.className = "row";
-
-        for (let apt = 0; apt < entrance.count; apt++) {
-          const aptNumber = entrance.start + floor * entrance.count + apt;
-          const cell = document.createElement("div");
-          cell.className = "cell";
-
-          const status = statusMap[aptNumber] || "nodata";
-
-          if (show[status]) cell.classList.add(status);
-          if (aptNumber === searchApt) cell.classList.add("highlight");
-
-          cell.textContent = aptNumber;
-          row.appendChild(cell);
-        }
-
-        const label = document.createElement("div");
-        label.textContent = floorNumbers[floor];
-        floorLabels.appendChild(label);
-        grid.appendChild(row);
-      }
-
-      floorGroup.appendChild(floorLabels);
-      floorGroup.appendChild(grid);
-      wrapper.appendChild(title);
-      wrapper.appendChild(floorGroup);
-      buildingDiv.appendChild(wrapper);
-    });
-
-    // Показать информацию о квартире
-    const aptInfo = document.getElementById("apt-info");
-    if (!isNaN(searchApt)) {
-      let found = false;
-      for (let e = 0; e < entrances.length; e++) {
-        const entrance = entrances[e];
-        const start = entrance.start;
-        const end = entrance.start + entrance.count * floors;
-        if (searchApt >= start && searchApt < end) {
-          const localIndex = searchApt - start;
-          const floor = Math.floor(localIndex / entrance.count) + 2;
-          const status = statusMap[searchApt] || "nodata";
-          aptInfo.textContent = `Квартира ${searchApt} → Подъезд ${e + 1}, этаж ${floor}, ${statusLabel[status]}`;
-          found = true;
-          break;
-        }
-      }
-      if (!found) {
-        aptInfo.textContent = `Квартира ${searchApt} не найдена в структуре подъездов`;
-      }
-    } else {
-      aptInfo.textContent = '';
-    }
-  }
-</script>
-</body>
-</html>
+        document.getElementById(`count-${type}`).textContent = counts[type
