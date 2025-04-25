@@ -260,7 +260,7 @@
       const percentYellow = (counts.yellow / TOTAL_APARTMENTS) * 100;
 
       const kvorumToday = (percentGreen + percentBlue + percentYellow).toFixed(1);
-      const avgSpeed = daysPassed > 0 ? (kvorumToday / daysPassed).toFixed(2) : "0";
+      const avgSpeed = daysPassed > 0 ? (percentGreen / daysPassed).toFixed(2) : "0";
       const finalKvorum = (parseFloat(avgSpeed) * daysLeft + percentGreen).toFixed(1);
 
       document.getElementById("kvorum-today").textContent = kvorumToday;
