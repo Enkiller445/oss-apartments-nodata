@@ -246,4 +246,124 @@
 
       // Статусы
       ["green", "blue", "yellow", "red", "nodata"].forEach(type => {
-        document.getElementById(`count-${type}`).textContent = counts[type
+        document.getElementById(`count-${type}`).textContent = counts[type];
+        document.getElementById(`percent-${type}`).textContent = ((counts[type] / TOTAL_APARTMENTS) * 100).toFixed(1);
+      });
+
+      // Аналитика
+      const now = new Date();
+      const daysPassed = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
+      const daysLeft = Math.max(0, Math.floor((endDate - now) / (1000 * 60 * 60 * 24)));
+
+      const percentGreen = (counts.green / TOTAL_APARTMENTS) * 100;
+      const percentBlue = (counts.blue / TOTAL_APARTMENTS) * 100;
+      const percentYellow = (counts.yellow / TOTAL_APARTMENTS) * 100;
+
+      const kvorumToday = (percentGreen + percentBlue + percentYellow).toFixed(1);
+      const avgSpeed = daysPassed > 0 ? (kvorumToday / daysPassed).toFixed(2) : "0";
+      const finalKvorum = (parseFloat(avgSpeed) * daysLeft + percentGreen).toFixed(1);
+
+      document.getElementById("kvorum-today").textContent = kvorumToday;
+      document.getElementById("oss-days").textContent = daysPassed;
+      document.getElementById("avg-speed").textContent = avgSpeed;
+      document.getElementById("oss-left").textContent = daysLeft;
+      document.getElementById("kvorum-final").textContent = finalKvorum;
+
+      render();
+    }
+  });
+
+  function render() {
+    const buildingDiv = document.getElementById("building");
+    buildingDiv.innerHTML = '';
+
+    const show = {
+      green: document.getElementById("show-green").checked,
+      blue: document.getElementById("show-blue").checked,
+      yellow: document.getElementById("show-yellow").checked,
+      red: document.getElementById("show-red").checked,
+      nodata: document.getElementById("show-nodata").checked
+    };
+
+    const selectedEntrance = document.getElementById("entranceFilter").value;
+    const searchApt = parseInt(document.getElementById("aptSearch").value);
+
+    entrances.forEach((entrance, index) => {
+      const entranceNumber = index + 1;
+      if (selectedEntrance !== 'all' && parseInt(selectedEntrance) !== entranceNumber) return;
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "entrance-block";
+
+      const title = document.createElement("div");
+      title.className = "entrance-title";
+      title.textContent = `Подъезд ${entranceNumber}`;
+
+      const floorGroup = document.createElement("div");
+      floorGroup.className = "entrance";
+
+      const floorLabels = document.createElement("div");
+      floorLabels.className = "floor-labels";
+
+      const grid = document.createElement("div");
+      grid.className = "columns";
+
+      for (let i = 0; i < floors; i++) {
+        const floor = floors - 1 - i;
+        const row = document.createElement("div");
+        row.className = "row";
+
+        for (let apt = 0; apt < entrance.count; apt++) {
+          const aptNumber = entrance.start + floor * entrance.count + apt;
+          const cell = document.createElement("div");
+          cell.className = "cell";
+
+          const status = statusMap[aptNumber] || "nodata";
+
+          if (show[status]) cell.classList.add(status);
+          if (aptNumber === searchApt) cell.classList.add("highlight");
+
+          cell.textContent = aptNumber;
+          row.appendChild(cell);
+        }
+
+        const label = document.createElement("div");
+        label.textContent = floorNumbers[floor];
+        floorLabels.appendChild(label);
+        grid.appendChild(row);
+      }
+
+      floorGroup.appendChild(floorLabels);
+      floorGroup.appendChild(grid);
+      wrapper.appendChild(title);
+      wrapper.appendChild(floorGroup);
+      buildingDiv.appendChild(wrapper);
+    });
+
+    // Инфо о квартире
+    const aptInfo = document.getElementById("apt-info");
+    if (!isNaN(searchApt)) {
+      let found = false;
+      for (let e = 0; e < entrances.length; e++) {
+        const entrance = entrances[e];
+        const start = entrance.start;
+        const end = entrance.start + entrance.count * floors;
+        if (searchApt >= start && searchApt < end) {
+          const localIndex = searchApt - start;
+          const floor = Math.floor(localIndex / entrance.count) + 2;
+          const status = statusMap[searchApt] || "nodata";
+          aptInfo.textContent = `Квартира ${searchApt} → Подъезд ${e + 1}, этаж ${floor}, ${statusLabel[status]}`;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        aptInfo.textContent = `Квартира ${searchApt} не найдена в структуре подъездов`;
+      }
+    } else {
+      aptInfo.textContent = '';
+    }
+  }
+</script>
+</body>
+</html>
