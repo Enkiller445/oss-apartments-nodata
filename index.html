@@ -159,14 +159,7 @@ Papa.parse(csvUrl, {
   }
 });
 
-function render() { /* твой рендеринг квартир без изменений */ }
-function resetFilters() {
-  document.getElementById("entranceFilter").value = "all";
-  document.getElementById("aptSearch").value = "";
-  render();
-}
-
-  function render() {
+function render() {
     const buildingDiv = document.getElementById("building");
     buildingDiv.innerHTML = '';
 
