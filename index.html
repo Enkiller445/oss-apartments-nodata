@@ -6,152 +6,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
-    body {
-      margin: 0;
-      font-family: "Segoe UI", sans-serif;
-      background-color: #d1eaf5;
-      color: #2d2d2d;
-      padding: 20px;
-      text-align: center;
-    }
-
-    h1 {
-      font-size: 22px;
-      margin-bottom: 10px;
-    }
-
-    .info-panel {
-      display: flex;
-      justify-content: center;
-      gap: 40px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-
-    .status-column, .analytics-column {
-      font-size: 14px;
-      line-height: 1.6;
-      text-align: left;
-      min-width: 240px;
-    }
-
-    .status-column label {
-      display: block;
-      margin-bottom: 4px;
-      cursor: pointer;
-    }
-
-    .status-column input {
-      margin-right: 6px;
-    }
-
+    body { margin: 0; font-family: "Segoe UI", sans-serif; background-color: #d1eaf5; color: #2d2d2d; padding: 20px; text-align: center; }
+    h1 { font-size: 22px; margin-bottom: 10px; }
+    .info-panel { display: flex; justify-content: center; gap: 40px; margin-bottom: 20px; flex-wrap: wrap; }
+    .status-column, .analytics-column { font-size: 14px; line-height: 1.6; text-align: left; min-width: 240px; }
+    .status-column label { display: block; margin-bottom: 4px; cursor: pointer; }
+    .status-column input { margin-right: 6px; }
     .green { color: #00c853; }
     .blue { color: #6fa8dc; }
     .yellow { color: #fbc02d; }
     .red { color: #e53935; }
     .gray { color: #666; }
-
-    .filters {
-      margin-bottom: 10px;
-    }
-
-    .building {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 40px;
-    }
-
-    .entrance-block {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .entrance-title {
-      font-weight: bold;
-      margin-bottom: 5px;
-      font-size: 14px;
-    }
-
-    .entrance {
-      display: flex;
-    }
-
-    .floor-labels {
-      display: flex;
-      flex-direction: column;
-      margin-right: 5px;
-    }
-
-    .floor-labels div {
-      height: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      font-size: 11px;
-      color: #555;
-      width: 22px;
-      font-weight: bold;
-    }
-
-    .columns {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .row {
-      display: flex;
-      gap: 2px;
-    }
-
-    .cell {
-      width: 28px;
-      height: 28px;
-      background-color: transparent;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
-      box-shadow: 0 0 2px rgba(0, 0, 0, 0.05);
-      box-sizing: border-box;
-    }
-
+    .filters { margin-bottom: 10px; }
+    .building { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; }
+    .entrance-block { display: flex; flex-direction: column; align-items: center; }
+    .entrance-title { font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+    .entrance { display: flex; }
+    .floor-labels { display: flex; flex-direction: column; margin-right: 5px; }
+    .floor-labels div { height: 28px; display: flex; align-items: center; justify-content: flex-end; font-size: 11px; color: #555; width: 22px; font-weight: bold; }
+    .columns { display: flex; flex-direction: column; }
+    .row { display: flex; gap: 2px; }
+    .cell { width: 28px; height: 28px; background-color: transparent; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 10px; box-shadow: 0 0 2px rgba(0, 0, 0, 0.05); box-sizing: border-box; }
     .cell.green { background-color: #00c853; color: #fff; font-weight: bold; }
     .cell.blue  { background-color: #6fa8dc; color: #fff; font-weight: bold; }
     .cell.yellow { background-color: #fbc02d; color: #000; font-weight: bold; }
     .cell.red { background-color: #e53935; color: #fff; font-weight: bold; }
     .cell.nodata { background-color: #fffdf5; border: 1px solid #ccc; }
-
-    .cell.highlight {
-      outline: 2px solid #ffeb3b !important;
-      background-color: #fff59d !important;
-      font-weight: bold;
-      z-index: 10;
-    }
-
-    #apt-info {
-      font-size: 14px;
-      font-weight: bold;
-      margin-top: 8px;
-      margin-bottom: 16px;
-    }
-
+    .cell.highlight { outline: 2px solid #ffeb3b !important; background-color: #fff59d !important; font-weight: bold; z-index: 10; }
+    #apt-info { font-size: 14px; font-weight: bold; margin-top: 8px; margin-bottom: 16px; }
     @media (max-width: 768px) {
-      .info-panel {
-        flex-direction: column;
-        align-items: center;
-      }
-      .cell {
-        width: 24px;
-        height: 24px;
-        font-size: 9px;
-      }
-      .floor-labels div {
-        height: 24px;
-        font-size: 9px;
-      }
+      .info-panel { flex-direction: column; align-items: center; }
+      .cell { width: 24px; height: 24px; font-size: 9px; }
+      .floor-labels div { height: 24px; font-size: 9px; }
     }
   </style>
 </head>
@@ -194,176 +80,172 @@
   </div>
   <div id="apt-info"></div>
   <div class="building" id="building"></div>
+
 <script>
-  const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTRRbhD4HVJzaB0vZwakUhpv0rHu3LvS0Gxq3zl4Qo9dANsvW8LosfiylBqljl2dVV1vmMNpOpP0516/pub?gid=63142697&single=true&output=csv';
-  const TOTAL_APARTMENTS = 735;
+const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTRRbhD4HVJzaB0vZwakUhpv0rHu3LvS0Gxq3zl4Qo9dANsvW8LosfiylBqljl2dVV1vmMNpOpP0516/pub?gid=63142697&single=true&output=csv';
+const TOTAL_APARTMENTS = 735;
+const startDate = new Date('2025-04-10');
+const endDate = new Date('2025-08-10');
+const correctionFactor = 0.8; // Коэффициент 0.8 на оставшиеся дни
 
-  const startDate = new Date('2025-04-10');
-  const endDate = new Date('2025-08-10');
+const entrances = [
+  { count: 5, start: 1 },
+  { count: 5, start: 106 },
+  { count: 6, start: 211 },
+  { count: 10, start: 337 },
+  { count: 9, start: 547 }
+];
 
-  const entrances = [
-    { count: 5, start: 1 },
-    { count: 5, start: 106 },
-    { count: 6, start: 211 },
-    { count: 10, start: 337 },
-    { count: 9, start: 547 }
-  ];
+const floors = 21;
+const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2);
+let statusMap = {};
 
-  const floors = 21;
-  const floorNumbers = Array.from({ length: floors }, (_, i) => i + 2);
-  let statusMap = {};
+const statusLabel = {
+  green: "проголосовали",
+  blue: "подготовили бюллетень",
+  yellow: "ожидается возврат",
+  red: "отказались",
+  nodata: "нет данных"
+};
 
-  const statusLabel = {
-    green: "проголосовали",
-    blue: "подготовили бюллетень",
-    yellow: "ожидается возврат",
-    red: "отказались",
-    nodata: "нет данных"
-  };
+Papa.parse(csvUrl, {
+  download: true,
+  header: true,
+  complete: function(results) {
+    const data = results.data;
+    statusMap = {};
+    let counts = { green: 0, blue: 0, yellow: 0, red: 0, nodata: 0 };
 
-  Papa.parse(csvUrl, {
-    download: true,
-    header: true,
-    complete: function(results) {
-      const data = results.data;
-      statusMap = {};
-      let counts = { green: 0, blue: 0, yellow: 0, red: 0, nodata: 0 };
-
-      data.forEach(row => {
-        const apt = parseInt(row["Квартира"]);
-        const color = row["Цвет"]?.trim().toLowerCase();
-        if (!apt) return;
-        if (color === "#00ff00") statusMap[apt] = "green", counts.green++;
-        else if (color === "#6fa8dc" || color === "#6d9eeb") statusMap[apt] = "blue", counts.blue++;
-        else if (color === "#ffff00") statusMap[apt] = "yellow", counts.yellow++;
-        else if (color === "#ff0000") statusMap[apt] = "red", counts.red++;
-        else if (color === "#ffffff") statusMap[apt] = "nodata", counts.nodata++;
-      });
-
-      for (let i = 1; i <= TOTAL_APARTMENTS; i++) {
-        if (!statusMap[i]) statusMap[i] = "nodata", counts.nodata++;
-      }
-
-      // Статусы
-      ["green", "blue", "yellow", "red", "nodata"].forEach(type => {
-        document.getElementById(`count-${type}`).textContent = counts[type];
-        document.getElementById(`percent-${type}`).textContent = ((counts[type] / TOTAL_APARTMENTS) * 100).toFixed(1);
-      });
-
-      // Аналитика
-      const now = new Date();
-      const daysPassed = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
-      const daysLeft = Math.max(0, Math.floor((endDate - now) / (1000 * 60 * 60 * 24)));
-
-      const percentGreen = (counts.green / TOTAL_APARTMENTS) * 100;
-      const percentBlue = (counts.blue / TOTAL_APARTMENTS) * 100;
-      const percentYellow = (counts.yellow / TOTAL_APARTMENTS) * 100;
-
-      const kvorumToday = (percentGreen + percentBlue + percentYellow).toFixed(1);
-      const avgSpeed = daysPassed > 0 ? (percentGreen / daysPassed).toFixed(2) : "0";
-      const finalKvorum = (parseFloat(avgSpeed) * daysLeft + percentGreen).toFixed(1);
-
-      document.getElementById("kvorum-today").textContent = kvorumToday;
-      document.getElementById("oss-days").textContent = daysPassed;
-      document.getElementById("avg-speed").textContent = avgSpeed;
-      document.getElementById("oss-left").textContent = daysLeft;
-      document.getElementById("kvorum-final").textContent = finalKvorum;
-
-      render();
-    }
-  });
-
-  function render() {
-    const buildingDiv = document.getElementById("building");
-    buildingDiv.innerHTML = '';
-
-    const show = {
-      green: document.getElementById("show-green").checked,
-      blue: document.getElementById("show-blue").checked,
-      yellow: document.getElementById("show-yellow").checked,
-      red: document.getElementById("show-red").checked,
-      nodata: document.getElementById("show-nodata").checked
-    };
-
-    const selectedEntrance = document.getElementById("entranceFilter").value;
-    const searchApt = parseInt(document.getElementById("aptSearch").value);
-
-    entrances.forEach((entrance, index) => {
-      const entranceNumber = index + 1;
-      if (selectedEntrance !== 'all' && parseInt(selectedEntrance) !== entranceNumber) return;
-
-      const wrapper = document.createElement("div");
-      wrapper.className = "entrance-block";
-
-      const title = document.createElement("div");
-      title.className = "entrance-title";
-      title.textContent = `Подъезд ${entranceNumber}`;
-
-      const floorGroup = document.createElement("div");
-      floorGroup.className = "entrance";
-
-      const floorLabels = document.createElement("div");
-      floorLabels.className = "floor-labels";
-
-      const grid = document.createElement("div");
-      grid.className = "columns";
-
-      for (let i = 0; i < floors; i++) {
-        const floor = floors - 1 - i;
-        const row = document.createElement("div");
-        row.className = "row";
-
-        for (let apt = 0; apt < entrance.count; apt++) {
-          const aptNumber = entrance.start + floor * entrance.count + apt;
-          const cell = document.createElement("div");
-          cell.className = "cell";
-
-          const status = statusMap[aptNumber] || "nodata";
-
-          if (show[status]) cell.classList.add(status);
-          if (aptNumber === searchApt) cell.classList.add("highlight");
-
-          cell.textContent = aptNumber;
-          row.appendChild(cell);
-        }
-
-        const label = document.createElement("div");
-        label.textContent = floorNumbers[floor];
-        floorLabels.appendChild(label);
-        grid.appendChild(row);
-      }
-
-      floorGroup.appendChild(floorLabels);
-      floorGroup.appendChild(grid);
-      wrapper.appendChild(title);
-      wrapper.appendChild(floorGroup);
-      buildingDiv.appendChild(wrapper);
+    data.forEach(row => {
+      const apt = parseInt(row["Квартира"]);
+      const color = row["Цвет"]?.trim().toLowerCase();
+      if (!apt) return;
+      if (color === "#00ff00") statusMap[apt] = "green", counts.green++;
+      else if (color === "#6fa8dc" || color === "#6d9eeb") statusMap[apt] = "blue", counts.blue++;
+      else if (color === "#ffff00") statusMap[apt] = "yellow", counts.yellow++;
+      else if (color === "#ff0000") statusMap[apt] = "red", counts.red++;
+      else statusMap[apt] = "nodata", counts.nodata++;
     });
 
-    // Инфо о квартире
-    const aptInfo = document.getElementById("apt-info");
-    if (!isNaN(searchApt)) {
-      let found = false;
-      for (let e = 0; e < entrances.length; e++) {
-        const entrance = entrances[e];
-        const start = entrance.start;
-        const end = entrance.start + entrance.count * floors;
-        if (searchApt >= start && searchApt < end) {
-          const localIndex = searchApt - start;
-          const floor = Math.floor(localIndex / entrance.count) + 2;
-          const status = statusMap[searchApt] || "nodata";
-          aptInfo.textContent = `Квартира ${searchApt} → Подъезд ${e + 1}, этаж ${floor}, ${statusLabel[status]}`;
-          found = true;
-          break;
-        }
-      }
-      if (!found) {
-        aptInfo.textContent = `Квартира ${searchApt} не найдена в структуре подъездов`;
-      }
-    } else {
-      aptInfo.textContent = '';
-    }
+    ["green", "blue", "yellow", "red", "nodata"].forEach(type => {
+      document.getElementById(`count-${type}`).textContent = counts[type];
+      document.getElementById(`percent-${type}`).textContent = ((counts[type] / TOTAL_APARTMENTS) * 100).toFixed(1);
+    });
+
+    const now = new Date();
+    const daysPassed = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
+    const daysLeft = Math.max(0, Math.floor((endDate - now) / (1000 * 60 * 60 * 24)));
+
+    const percentGreen = (counts.green / TOTAL_APARTMENTS) * 100;
+    const percentBlue = (counts.blue / TOTAL_APARTMENTS) * 100;
+    const percentYellow = (counts.yellow / TOTAL_APARTMENTS) * 100;
+
+    const kvorumToday = (percentGreen + percentBlue + percentYellow).toFixed(1);
+    const avgSpeed = daysPassed > 0 ? (percentGreen / daysPassed).toFixed(2) : "0";
+    let forecast = (parseFloat(avgSpeed) * daysLeft * correctionFactor + percentGreen).toFixed(1);
+
+    if (forecast > 100) forecast = 100;
+
+    document.getElementById("kvorum-today").textContent = kvorumToday;
+    document.getElementById("oss-days").textContent = daysPassed;
+    document.getElementById("avg-speed").textContent = avgSpeed;
+    document.getElementById("oss-left").textContent = daysLeft;
+    document.getElementById("kvorum-final").textContent = forecast;
+
+    render();
   }
+});
+
+function render() {
+  const buildingDiv = document.getElementById("building");
+  buildingDiv.innerHTML = '';
+
+  const show = {
+    green: document.getElementById("show-green").checked,
+    blue: document.getElementById("show-blue").checked,
+    yellow: document.getElementById("show-yellow").checked,
+    red: document.getElementById("show-red").checked,
+    nodata: document.getElementById("show-nodata").checked
+  };
+
+  const selectedEntrance = document.getElementById("entranceFilter").value;
+  const searchApt = parseInt(document.getElementById("aptSearch").value);
+
+  entrances.forEach((entrance, index) => {
+    const entranceNumber = index + 1;
+    if (selectedEntrance !== 'all' && parseInt(selectedEntrance) !== entranceNumber) return;
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "entrance-block";
+
+    const title = document.createElement("div");
+    title.className = "entrance-title";
+    title.textContent = `Подъезд ${entranceNumber}`;
+
+    const floorGroup = document.createElement("div");
+    floorGroup.className = "entrance";
+
+    const floorLabels = document.createElement("div");
+    floorLabels.className = "floor-labels";
+
+    const grid = document.createElement("div");
+    grid.className = "columns";
+
+    for (let i = 0; i < floors; i++) {
+      const floor = floors - 1 - i;
+      const row = document.createElement("div");
+      row.className = "row";
+
+      for (let apt = 0; apt < entrance.count; apt++) {
+        const aptNumber = entrance.start + floor * entrance.count + apt;
+        const cell = document.createElement("div");
+        cell.className = "cell";
+
+        const status = statusMap[aptNumber] || "nodata";
+        if (show[status]) cell.classList.add(status);
+        if (aptNumber === searchApt) cell.classList.add("highlight");
+
+        cell.textContent = aptNumber;
+        row.appendChild(cell);
+      }
+
+      const label = document.createElement("div");
+      label.textContent = floorNumbers[floor];
+      floorLabels.appendChild(label);
+      grid.appendChild(row);
+    }
+
+    floorGroup.appendChild(floorLabels);
+    floorGroup.appendChild(grid);
+    wrapper.appendChild(title);
+    wrapper.appendChild(floorGroup);
+    buildingDiv.appendChild(wrapper);
+  });
+
+  const aptInfo = document.getElementById("apt-info");
+  if (!isNaN(searchApt)) {
+    let found = false;
+    for (let e = 0; e < entrances.length; e++) {
+      const entrance = entrances[e];
+      const start = entrance.start;
+      const end = entrance.start + entrance.count * floors;
+      if (searchApt >= start && searchApt < end) {
+        const localIndex = searchApt - start;
+        const floor = Math.floor(localIndex / entrance.count) + 2;
+        const status = statusMap[searchApt] || "nodata";
+        aptInfo.textContent = `Квартира ${searchApt} → Подъезд ${e + 1}, этаж ${floor}, ${statusLabel[status]}`;
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      aptInfo.textContent = `Квартира ${searchApt} не найдена в структуре подъездов`;
+    }
+  } else {
+    aptInfo.textContent = '';
+  }
+}
 </script>
+
 </body>
 </html>
