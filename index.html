@@ -160,11 +160,19 @@
     .cell.highlight { outline: 2px solid #ffeb3b !important; background-color: #fff59d !important; font-weight: bold; z-index: 10; }
 
     #apt-info {
-      font-size: 14px;
-      font-weight: bold;
-      margin-top: 8px;
-      margin-bottom: 16px;
-    }
+  background: #ffffffaa;
+  padding: 12px 16px;
+  margin: 10px 0 20px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: normal;
+  color: #333;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  text-align: center;
+  line-height: 1.5;
+  max-width: 95vw;
+}
+
 
     #loading {
       font-weight: bold;
@@ -413,7 +421,16 @@
             const localIndex = searchApt - start;
             const floor = Math.floor(localIndex / entrance.count) + 2;
             const status = statusMap[searchApt] || "nodata";
-            aptInfo.textContent = `Квартира ${searchApt} → Подъезд ${e + 1}, этаж ${floor}, ${statusLabel[status]}`;
+            aptInfo.innerHTML = `
+  🏠 <strong>Квартира ${searchApt}</strong><br>
+  🚪 Подъезд <strong>${e + 1}</strong><br>
+  ⬆ Этаж <strong>${floor}</strong><br>
+  ${status === "green" ? "🟢" :
+    status === "blue" ? "🔵" :
+    status === "yellow" ? "🟡" :
+    status === "red" ? "🔴" : "⚪"} ${statusLabel[status]}
+`;
+
             found = true;
             break;
           }
