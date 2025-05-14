@@ -138,6 +138,23 @@
       margin-bottom: 16px;
     }
 
+    #loading {
+      font-weight: bold;
+      margin: 20px;
+      font-size: 16px;
+      color: #444;
+    }
+
+    .spinner {
+      display: inline-block;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
     @media (max-width: 768px) {
       .info-panel {
         flex-direction: column;
@@ -162,21 +179,23 @@
   </header>
 
   <main>
+    <div id="loading">Загрузка данных... <span class="spinner">⏳</span></div>
+
     <div class="info-panel">
       <div class="status-column">
-        <label><input type="checkbox" id="show-green" checked onchange="render()"> <span class="green">Проголосовали:</span> <span id="count-green">0</span> (<span id="percent-green">0</span>%)</label>
-        <label><input type="checkbox" id="show-blue" checked onchange="render()"> <span class="blue">Подготовили бюллетень:</span> <span id="count-blue">0</span> (<span id="percent-blue">0</span>%)</label>
-        <label><input type="checkbox" id="show-yellow" checked onchange="render()"> <span class="yellow">Ожидается возврат:</span> <span id="count-yellow">0</span> (<span id="percent-yellow">0</span>%)</label>
-        <label><input type="checkbox" id="show-red" checked onchange="render()"> <span class="red">Отказались:</span> <span id="count-red">0</span> (<span id="percent-red">0</span>%)</label>
-        <label><input type="checkbox" id="show-nodata" checked onchange="render()"> <span class="gray">Нет данных:</span> <span id="count-nodata">0</span> (<span id="percent-nodata">0</span>%)</label>
+        <label><input type="checkbox" id="show-green" checked onchange="render()"> <span class="green">Проголосовали:</span> <span id="count-green"><span class="spinner">⏳</span></span> (<span id="percent-green"><span class="spinner">⏳</span></span>%)</label>
+        <label><input type="checkbox" id="show-blue" checked onchange="render()"> <span class="blue">Подготовили бюллетень:</span> <span id="count-blue"><span class="spinner">⏳</span></span> (<span id="percent-blue"><span class="spinner">⏳</span></span>%)</label>
+        <label><input type="checkbox" id="show-yellow" checked onchange="render()"> <span class="yellow">Ожидается возврат:</span> <span id="count-yellow"><span class="spinner">⏳</span></span> (<span id="percent-yellow"><span class="spinner">⏳</span></span>%)</label>
+        <label><input type="checkbox" id="show-red" checked onchange="render()"> <span class="red">Отказались:</span> <span id="count-red"><span class="spinner">⏳</span></span> (<span id="percent-red"><span class="spinner">⏳</span></span>%)</label>
+        <label><input type="checkbox" id="show-nodata" checked onchange="render()"> <span class="gray">Нет данных:</span> <span id="count-nodata"><span class="spinner">⏳</span></span> (<span id="percent-nodata"><span class="spinner">⏳</span></span>%)</label>
       </div>
 
       <div class="analytics-column">
-        <div><strong>Возможный кворум на сегодня:</strong> <span id="kvorum-today">0</span>%</div>
-        <div><strong>ОСС идёт дней:</strong> <span id="oss-days">0</span></div>
-        <div><strong>Средний темп:</strong> <span id="avg-speed">0</span>% в день</div>
-        <div><strong>ОСС осталось дней:</strong> <span id="oss-left">0</span></div>
-        <div><strong>Прогноз кворума:</strong> <span id="kvorum-final">0</span>%</div>
+        <div><strong>Возможный кворум на сегодня:</strong> <span id="kvorum-today"><span class="spinner">⏳</span></span>%</div>
+        <div><strong>ОСС идёт дней:</strong> <span id="oss-days"><span class="spinner">⏳</span></span></div>
+        <div><strong>Средний темп:</strong> <span id="avg-speed"><span class="spinner">⏳</span></span>% в день</div>
+        <div><strong>ОСС осталось дней:</strong> <span id="oss-left"><span class="spinner">⏳</span></span></div>
+        <div><strong>Прогноз кворума:</strong> <span id="kvorum-final"><span class="spinner">⏳</span></span>%</div>
       </div>
     </div>
 
@@ -228,6 +247,7 @@
       download: true,
       header: true,
       complete: function(results) {
+        document.getElementById("loading").style.display = "none";
         results.data.forEach(row => {
           const apt = parseInt(row["Квартира"]);
           const color = row["Цвет"]?.trim().toLowerCase();
