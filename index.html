@@ -430,6 +430,8 @@
     status === "yellow" ? "🟡" :
     status === "red" ? "🔴" : "⚪"} ${statusLabel[status]}
 `;
+    aptInfo.style.display = "block";
+
 
             found = true;
             break;
@@ -439,8 +441,10 @@
           aptInfo.textContent = `Квартира ${searchApt} не найдена в структуре подъездов`;
         }
       } else {
-        aptInfo.textContent = '';
-      }
+  aptInfo.innerHTML = '';
+  aptInfo.style.display = "none";
+}
+
     }
   </script>
 
